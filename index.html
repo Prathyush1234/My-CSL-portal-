@@ -1,95 +1,2256 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <script>
-      // Suppress and intercept Vite HMR WebSocket connection closures in Cloud Run iframe environment
-      (function() {
-        try {
-          const OriginalWebSocket = window.WebSocket;
-          if (OriginalWebSocket) {
-            window.WebSocket = function(url, protocols) {
-              if (
-                protocols === 'vite-hmr' ||
-                (typeof url === 'string' && (url.includes('vite') || url.includes('/@vite')))
-              ) {
-                const dummy = new EventTarget();
-                dummy.binaryType = 'blob';
-                dummy.readyState = 1; // OPEN
-                dummy.send = function() {};
-                dummy.close = function() {};
-                dummy.addEventListener = dummy.addEventListener.bind(dummy);
-                dummy.removeEventListener = dummy.removeEventListener.bind(dummy);
-                dummy.dispatchEvent = dummy.dispatchEvent.bind(dummy);
-                setTimeout(function() {
-                  try {
-                    dummy.dispatchEvent(new Event('open'));
-                  } catch (e) {}
-                }, 5);
-                return dummy;
-              }
-              return new OriginalWebSocket(url, protocols);
-            };
-            window.WebSocket.prototype = OriginalWebSocket.prototype;
-            window.WebSocket.CONNECTING = 0;
-            window.WebSocket.OPEN = 1;
-            window.WebSocket.CLOSING = 2;
-            window.WebSocket.CLOSED = 3;
-          }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>My CSL - Cochin Shipyard Portal</title>
+  <meta name="description" content="Cochin Shipyard Limited employee portal featuring structural drawing analysis and component extraction powered by Gemini Pro, employee pass, and dockyard engineering tools.">
+  <meta property="og:title" content="My CSL - Cochin Shipyard Portal">
+  <meta property="og:description" content="Cochin Shipyard Limited employee portal featuring structural drawing analysis and component extraction powered by Gemini Pro, employee pass, and dockyard engineering tools.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Manjari:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark-base: #061523;
+      --bg-navy-main: #0a2238;
+      --bg-navy-card: #0e2e4c;
+      --bg-navy-deep: #10345c;
+      --drawer-bg: #041424;
+      --card-cream: #fdf6e2;
+      --card-cream-hover: #f7edd0;
+      --card-cream-border: #ebd9ab;
+      --text-dark: #1c3144;
+      --text-muted: #48627a;
+      --accent-maroon: #900c3f;
+      --accent-maroon-hover: #750933;
+      --accent-maroon-active: #590626;
+      --accent-teal: #0e677c;
+      --accent-teal-active: #088395;
+      --accent-cyan: #38bdf8;
+      --accent-gold: #d4a34b;
+      --accent-emerald: #10b981;
+      --radius-card: 14px;
+      --radius-sm: 8px;
+      --shadow-card: 0 4px 18px rgba(0, 0, 0, 0.28);
+      --shadow-hover: 0 8px 26px rgba(0, 0, 0, 0.38);
+    }
 
-          // Filter console.error from reporting disabled HMR websocket closures
-          const origConsoleError = console.error;
-          console.error = function() {
-            for (let i = 0; i < arguments.length; i++) {
-              const arg = arguments[i];
-              const str = arg instanceof Error ? (arg.message + ' ' + (arg.stack || '')) : String(arg);
-              if (str.indexOf('WebSocket closed without opened') !== -1 || (str.indexOf('[vite]') !== -1 && str.indexOf('WebSocket') !== -1)) {
-                return;
-              }
-            }
-            return origConsoleError.apply(console, arguments);
-          };
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-          window.addEventListener('error', function(e) {
-            if (e && e.message && (e.message.indexOf('WebSocket') !== -1 || e.message.indexOf('ws://') !== -1 || e.message.indexOf('wss://') !== -1)) {
-              e.stopImmediatePropagation();
-              e.preventDefault();
-              return true;
-            }
-          }, true);
+    body {
+      background-color: var(--bg-navy-deep);
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(22, 67, 117, 0.6) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(10, 34, 61, 0.95) 0%, transparent 50%),
+        linear-gradient(180deg, #10345c 0%, #07192b 100%);
+      color: var(--text-dark);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
 
-          window.addEventListener('unhandledrejection', function(e) {
-            if (e && e.reason && String(e.reason).indexOf('WebSocket') !== -1) {
-              e.stopImmediatePropagation();
-              e.preventDefault();
-            }
-          }, true);
-        } catch (err) {}
-      })();
-    </script>
-    <title>My CSL - Cochin Shipyard Portal</title>
-    <meta name="description" content="Cochin Shipyard Limited official employee portal featuring biometric attendance, shift schedule, official wall calendar, and personnel services." />
-    <meta property="og:title" content="My CSL - Cochin Shipyard Portal" />
-    <meta property="og:description" content="Cochin Shipyard Limited official employee portal featuring biometric attendance, shift schedule, official wall calendar, and personnel services." />
-    <meta property="og:type" content="website" />
-    <meta name="theme-color" content="#021a24" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="My CSL" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    /* TOP APPLICATION BAR */
+    .app-topbar {
+      background: #081a2d;
+      border-bottom: 1px solid rgba(253, 246, 226, 0.12);
+      position: sticky;
+      top: 0;
+      z-index: 120;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-menu-toggle {
+      background: none;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: background 0.15s ease;
+    }
+
+    .app-menu-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .topbar-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.3px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .csl-crest-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #092642;
+      border: 1.5px solid #d4a34b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      transition: transform 0.15s ease;
+    }
+
+    .csl-crest-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* =========================================================
+       NAVIGATION DRAWER (EXACTLY MATCHING SCREENSHOT)
+       ========================================================= */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 16, 28, 0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .drawer-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .nav-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 330px;
+      max-width: 85vw;
+      background: var(--drawer-bg);
+      color: #ffffff;
+      z-index: 210;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5);
+      overflow-y: auto;
+    }
+
+    .nav-drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      padding: 20px 18px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .drawer-branding {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .csl-round-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #092642;
+      border: 2px solid #d4a34b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 0 10px rgba(212, 163, 75, 0.3);
+    }
+
+    .drawer-titles h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .drawer-titles p {
+      font-size: 10px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #38bdf8;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .drawer-close-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .drawer-close-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    .drawer-content {
+      flex: 1;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .drawer-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      border-radius: 10px;
+      color: #e2e8f0;
+      text-decoration: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+
+    .drawer-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+    }
+
+    .drawer-item.active {
+      background: var(--accent-teal);
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(14, 103, 124, 0.4);
+    }
+
+    .drawer-item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .drawer-item-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .icon-cyan { color: #38bdf8; }
+    .icon-gold { color: #f59e0b; }
+    .icon-green { color: #10b981; }
+
+    .drawer-badge-cyan {
+      background: rgba(14, 165, 233, 0.2);
+      border: 1px solid rgba(14, 165, 233, 0.4);
+      color: #38bdf8;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .drawer-badge-maroon {
+      background: var(--accent-maroon);
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .drawer-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #64748b;
+      font-weight: 700;
+      padding: 16px 14px 6px;
+    }
+
+    .drawer-footer {
+      padding: 16px 14px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .drawer-lang-label {
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .lang-segmented-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .lang-segment-btn {
+      padding: 8px 4px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .lang-segment-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .lang-segment-btn.active {
+      background: #f59e0b;
+      color: #0f172a;
+      border-color: #f59e0b;
+      font-weight: 700;
+    }
+
+    .helpdesk-text {
+      font-size: 11px;
+      color: #64748b;
+      text-align: center;
+    }
+
+    .helpdesk-text strong {
+      color: #94a3b8;
+    }
+
+    /* =========================================================
+       MAIN PORTAL LAYOUT
+       ========================================================= */
+    .app-main {
+      flex: 1;
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 18px 16px 40px;
+    }
+
+    /* CSL Button Styles */
+    .btn-maroon {
+      background-color: var(--accent-maroon);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-sm);
+      padding: 9px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+      transition: all 0.15s ease-in-out;
+      text-decoration: none;
+    }
+
+    .btn-maroon:hover {
+      background-color: var(--accent-maroon-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-cream-action {
+      background-color: var(--card-cream);
+      color: var(--accent-maroon);
+      border: 1px solid var(--card-cream-border);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      transition: all 0.15s ease;
+    }
+
+    .btn-cream-action:hover {
+      background-color: var(--card-cream-hover);
+    }
+
+    .portal-section-card {
+      background-color: var(--card-cream);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--card-cream-border);
+      padding: 22px;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+
+    /* CSL Digital Employee Pass */
+    .csl-pass-card {
+      background: linear-gradient(135deg, #10345c 0%, #071e36 100%);
+      border: 2px solid #d4a34b;
+      border-radius: 16px;
+      padding: 22px;
+      color: #ffffff;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      margin-bottom: 22px;
+    }
+
+    .duty-status-card {
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid var(--card-cream-border);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    /* Grid for Action Tiles */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .action-tile-btn {
+      background: #ffffff;
+      border: 1.5px solid var(--card-cream-border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: left;
+    }
+
+    .action-tile-btn:hover {
+      background: var(--card-cream-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+      border-color: #dfcca0;
+    }
+
+    .action-tile-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* DICTIONARY SPECIFIC STYLES */
+    .dict-header-banner {
+      background: rgba(10, 34, 61, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(253, 246, 226, 0.18);
+      border-radius: var(--radius-card);
+      padding: 16px 20px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .dict-title-group h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    .dict-title-group p {
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #d4a34b;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .nav-breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: rgba(253, 246, 226, 0.85);
+      flex-wrap: wrap;
+    }
+
+    .nav-breadcrumb-link {
+      color: var(--card-cream);
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .search-filter-card {
+      background-color: var(--card-cream);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--card-cream-border);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 22px;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input-wrapper svg {
+      position: absolute;
+      left: 12px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 11px 12px 11px 40px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--card-cream-border);
+      background: #ffffff;
+      color: var(--text-dark);
+      font-size: 14.5px;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(28, 82, 138, 0.15);
+    }
+
+    .search-results-list {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--card-cream-border);
+      display: none;
+      max-height: 360px;
+      overflow-y: auto;
+    }
+
+    .search-result-item {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: background 0.15s ease;
+    }
+
+    .search-result-item:hover {
+      background: rgba(28, 82, 138, 0.08);
+    }
+
+    .search-term-title {
+      font-weight: 700;
+      color: var(--text-dark);
+      font-size: 14px;
+    }
+
+    .view-container {
+      display: none;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .view-container.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-headline {
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .folders-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .folder-card {
+      background-color: var(--card-cream);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--card-cream-border);
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .folder-card:hover {
+      background-color: var(--card-cream-hover);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+      border-color: #dfcca0;
+    }
+
+    .folder-top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .folder-badge-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--accent-maroon);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .folder-term-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      background: rgba(28, 49, 68, 0.08);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .folder-card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+
+    .folder-card-title-ml {
+      font-family: 'Manjari', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent-maroon);
+      margin-bottom: 10px;
+    }
+
+    .folder-card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 16px;
+      flex: 1;
+    }
+
+    .folder-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(28, 49, 68, 0.1);
+      padding-top: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-maroon);
+    }
+
+    .folder-view-header {
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .folder-view-title-block {
+      background-color: var(--card-cream);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--card-cream-border);
+      padding: 18px 22px;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 20px;
+    }
+
+    .folder-view-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .folder-view-title-ml {
+      font-family: 'Manjari', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-maroon);
+      margin-bottom: 8px;
+    }
+
+    .folder-view-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .master-diagram-card {
+      background-color: var(--card-cream);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--card-cream-border);
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 24px;
+    }
+
+    .master-diagram-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(28, 49, 68, 0.12);
+    }
+
+    .master-diagram-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .master-diagram-svg-container {
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid var(--card-cream-border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: auto;
+    }
+
+    .terms-section-title {
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .terms-list-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .term-item-card {
+      background-color: var(--card-cream);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--card-cream-border);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-card);
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .term-item-card:hover {
+      background-color: var(--card-cream-hover);
+      transform: translateX(4px);
+      box-shadow: var(--shadow-hover);
+      border-color: #dfcca0;
+    }
+
+    .term-item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .term-index-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(28, 49, 68, 0.1);
+      color: var(--text-dark);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .term-item-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+
+    .term-item-malayalam {
+      font-family: 'Manjari', sans-serif;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--accent-maroon);
+      margin-bottom: 4px;
+    }
+
+    .term-item-snippet {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .term-item-arrow {
+      color: var(--accent-maroon);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(144, 12, 63, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .single-term-view-wrapper {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .term-view-top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .term-card-container {
+      background-color: var(--card-cream);
+      border-radius: 16px;
+      border: 1px solid var(--card-cream-border);
+      padding: 28px 26px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .term-header-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1.5px solid rgba(28, 49, 68, 0.12);
+    }
+
+    .term-category-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--accent-blue);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .term-card-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      line-height: 1.25;
+    }
+
+    .term-card-title-ml {
+      font-family: 'Manjari', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--accent-maroon);
+      margin-bottom: 20px;
+    }
+
+    .term-diagram-box {
+      background: #ffffff;
+      border: 1px solid var(--card-cream-border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-bottom: 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .term-diagram-box svg {
+      max-width: 100%;
+      height: auto;
+      max-height: 280px;
+      display: block;
+    }
+
+    .term-diagram-caption {
+      margin-top: 8px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      text-align: center;
+      font-style: italic;
+    }
+
+    .definition-section {
+      margin-bottom: 20px;
+    }
+
+    .section-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-blue);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .definition-text {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--text-dark);
+    }
+
+    .malayalam-box {
+      background: #f7edcf;
+      border: 1px solid #ebd9ab;
+      border-left: 4px solid var(--accent-maroon);
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+      margin-bottom: 22px;
+    }
+
+    .malayalam-box .section-label {
+      color: var(--accent-maroon);
+    }
+
+    .malayalam-text {
+      font-family: 'Manjari', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #2a1f10;
+      font-weight: 600;
+    }
+
+    .formula-box {
+      background: #ffffff;
+      border: 1px dashed var(--accent-blue);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      color: var(--accent-blue);
+    }
+
+    .card-bottom-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 26px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(28, 49, 68, 0.12);
+    }
+
+    /* Modal for Gemini Pro Blueprint Analyzer */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 34, 61, 0.85);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .analyzer-modal-card {
+      background-color: var(--card-cream);
+      border-radius: 16px;
+      border: 1px solid var(--card-cream-border);
+      max-width: 800px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      background: var(--bg-dark-base);
+      color: #ffffff;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--accent-gold);
+    }
+
+    .modal-header h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      color: #ffffff;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .dropzone-box {
+      border: 2px dashed #b5a072;
+      border-radius: var(--radius-card);
+      padding: 24px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      transition: background 0.15s ease;
+      margin-bottom: 16px;
+    }
+
+    .dropzone-box:hover {
+      background: #ffffff;
+      border-color: var(--accent-maroon);
+    }
+
+    .sample-drawings-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    .sample-pill-btn {
+      background: #ffffff;
+      border: 1px solid var(--card-cream-border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dark);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .sample-pill-btn:hover {
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+
+    .analysis-preview-container {
+      display: none;
+      background: #ffffff;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--card-cream-border);
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .extracted-items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .extracted-items-table th {
+      background: #f4ecda;
+      text-align: left;
+      padding: 8px 10px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--card-cream-border);
+    }
+
+    .extracted-items-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f0e6ce;
+      vertical-align: top;
+    }
+
+    .link-to-term {
+      color: var(--accent-maroon);
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .app-footer {
+      background: rgba(8, 26, 45, 0.95);
+      border-top: 1px solid rgba(253, 246, 226, 0.15);
+      padding: 16px;
+      text-align: center;
+      color: rgba(253, 246, 226, 0.7);
+      font-size: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .folders-grid {
+        grid-template-columns: 1fr;
+      }
+      .term-card-container {
+        padding: 20px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================
+       TOP APPLICATION HEADER WITH CSL MENU TOGGLE
+       ========================================================= -->
+  <header class="app-topbar">
+    <div class="topbar-left">
+      <button class="app-menu-toggle" id="drawerOpenBtn" aria-label="Open Navigation Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+      <h1 class="topbar-title">My CSL</h1>
+    </div>
+
+        <div class="topbar-right">
+      <button class="topbar-lang-pill" id="topbarLangBtn" aria-label="Toggle Language" title="Toggle English / മലയാളം">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+        <span id="topbarLangTxt">EN</span>
+      </button>
+
+      <!-- CSL Crest button matching top-right of screenshot -->
+      <button class="csl-crest-btn" id="cslCrestBtn" title="Cochin Shipyard Menu">
+        <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" stroke="#ea580c" stroke-width="2.2" stroke-dasharray="3.5 1.5"></circle>
+          <circle cx="20" cy="20" r="15" fill="#041b30" stroke="#00c6d7" stroke-width="1"></circle>
+          <path d="M11 26h18l-3 4H14l-3-4z" fill="#38bdf8"></path>
+          <path d="M14 26V15l8-4v15" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"></path>
+          <line x1="14" y1="18" x2="22" y2="14" stroke="#f59e0b" stroke-width="1"></line>
+          <rect x="13.5" y="21.5" width="13" height="5" rx="1.5" fill="#ea580c"></rect>
+          <text x="20" y="25.5" font-size="3.8" font-weight="900" fill="#ffffff" text-anchor="middle" font-family="sans-serif">CSL</text>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       DRAWER BACKDROP & NAVIGATION DRAWER (MATCHING SCREENSHOT)
+       ========================================================= -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <aside class="nav-drawer" id="navDrawer" aria-label="CSL Navigation Drawer">
+    <!-- Header -->
+    <div class="drawer-header">
+      <div class="drawer-branding">
+        <div class="csl-round-logo">
+          <!-- CSL anchor emblem -->
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d4a34b" stroke-width="2">
+            <circle cx="12" cy="5" r="2.5"></circle>
+            <line x1="12" y1="21" x2="12" y2="7.5"></line>
+            <path d="M5 12H2a10 10 0 0 0 20 0h-3"></path>
+          </svg>
+        </div>
+        <div class="drawer-titles">
+          <h3>My CSL</h3>
+          <p>COCHIN SHIPYARD LIMITED</p>
+        </div>
+      </div>
+      <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close Navigation Menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navigation Items -->
+    <nav class="drawer-content">
+      <!-- 1. Portal Front Page (Login) -->
+      <a class="drawer-item active" data-target="front">
+        <div class="drawer-item-left">
+          <span class="drawer-item-icon icon-cyan">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </span>
+          <span class="nav-txt-front">Portal Front Page (Login)</span>
+        </div>
+      </a>
+
+      <!-- 2. Quick Access Dashboard -->
+      <a class="drawer-item" data-target="dashboard">
+        <div class="drawer-item-left">
+          <span class="drawer-item-icon icon-cyan">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </span>
+          <span class="nav-txt-dashboard">Quick Access Dashboard</span>
+        </div>
+      </a>
+
+      <!-- 3. CSL Wall Calendar 2026 -->
+      <a class="drawer-item" data-target="calendar">
+        <div class="drawer-item-left">
+          <span class="drawer-item-icon icon-cyan">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </span>
+          <span class="nav-txt-calendar">CSL Wall Calendar 2026</span>
+        </div>
+      </a>
+
+      <!-- 4. CSL Salary Calculator & Payslip -->
+      <a class="drawer-item" data-target="salary">
+        <div class="drawer-item-left">
+          <span class="drawer-item-icon icon-gold">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="6" y1="4" x2="18" y2="4"></line>
+              <line x1="6" y1="9" x2="18" y2="9"></line>
+              <path d="M6 14h6a4 4 0 0 0 0-8"></path>
+              <line x1="9" y1="14" x2="15" y2="21"></line>
+            </svg>
+          </span>
+          <span class="nav-txt-salary">CSL Salary Calculator &amp; Payslip</span>
+        </div>
+      </a>
+
+      <!-- 5. CSL Income Tax Calculator -->
+      <a class="drawer-item" data-target="tax">
+        <div class="drawer-item-left">
+          <span class="drawer-item-icon icon-cyan">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+              <line x1="8" y1="6" x2="16" y2="6"></line>
+              <line x1="16" y1="14" x2="16" y2="18"></line>
+              <path d="M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M8 18h.01M12 18h.01"></path>
+            </svg>
+          </span>
+          <span class="nav-txt-tax">CSL Income Tax Calculator</span>
+        </div>
+        <span class="drawer-badge-cyan">FY 26-27</span>
+      </a>
+
+      <!-- 6. Biometric Attendance & Shift Register -->
+      <a class="drawer-item" data-target="attendance">
+        <div class="drawer-item-left">
+          <span class="drawer-item-icon icon-green">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4"></path>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+          </span>
+          <span class="nav-txt-attendance">Biometric Attendance &amp; Shift Register</span>
+        </div>
+      </a>
+
+      <!-- 7. SHIP THEORY DICTIONARY (PROMINENTLY FEATURED AS REQUESTED) -->
+      <a class="drawer-item" data-target="dictionary" id="drawerItemDictionary">
+        <div class="drawer-item-left">
+          <span class="drawer-item-icon" style="color: #f59e0b;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+          </span>
+          <span style="font-weight: 700;">Ship Theory Dictionary</span>
+        </div>
+        <span class="drawer-badge-maroon">NAVAL ARCH</span>
+      </a>
+
+      <!-- SECTION: YARD OPERATIONS -->
+      <div class="drawer-section-title">Yard Operations</div>
+
+      <!-- 8. Drydock & Berth Allocations -->
+      <a class="drawer-item" data-target="drydock">
+        <div class="drawer-item-left">
+          <span class="drawer-item-icon icon-cyan">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="5" r="3"></circle>
+              <line x1="12" y1="22" x2="12" y2="8"></line>
+              <path d="M5 12H2a10 10 0 0 0 20 0h-3"></path>
+            </svg>
+          </span>
+          <span>Drydock &amp; Berth Allocations</span>
+        </div>
+      </a>
+
+      <!-- 9. Safety Clearances (Level III) -->
+      <a class="drawer-item" data-target="safety">
+        <div class="drawer-item-left">
+          <span class="drawer-item-icon icon-cyan">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </span>
+          <span>Safety Clearances (Level III)</span>
+        </div>
+      </a>
+
+      <!-- 10. Naval Architecture Standards -->
+      <a class="drawer-item" data-target="standards">
+        <div class="drawer-item-left">
+          <span class="drawer-item-icon icon-cyan">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+          </span>
+          <span>Naval Architecture Standards</span>
+        </div>
+      </a>
+    </nav>
+
+    <!-- Drawer Footer -->
+    <div class="drawer-footer">
+      <div class="drawer-lang-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+        <span>Language / ഭാഷ:</span>
+      </div>
+      <div class="lang-segmented-bar">
+        <button class="lang-segment-btn active" data-lang="en">English</button>
+        <button class="lang-segment-btn" data-lang="ml">മലയാളം</button>
+        <button class="lang-segment-btn" data-lang="hi">हिन्दी</button>
+      </div>
+      <div class="helpdesk-text">
+        CSL Security &amp; Helpdesk: <strong>+91 484 2501200</strong>
+      </div>
+    </div>
+  </aside>
+
+  <!-- =========================================================
+       MAIN APPLICATION VIEW CONTAINER
+       ========================================================= -->
+  <main class="app-main">
+
+    <!-- =========================================================
+         MODULE 1: QUICK ACCESS DASHBOARD (ACTIVE HOMESCREEN)
+         ========================================================= -->
+        <!-- =========================================================
+         MODULE 0: PORTAL FIRST PAGE (MATCHING SCREENSHOT 1:1)
+         ========================================================= -->
+    <div id="moduleFront" class="portal-module active">
+      <div class="front-portal-wrapper">
+        <!-- Hero Header with CSL Emblem -->
+        <div class="front-hero-header">
+          <div class="front-csl-emblem">
+            <svg width="52" height="52" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="22" stroke="#ea580c" stroke-width="3" stroke-dasharray="4.2 1.8"></circle>
+              <circle cx="24" cy="24" r="18" fill="#041c33" stroke="#00c6d7" stroke-width="1.2"></circle>
+              <path d="M16 30V15l10-5v20" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+              <line x1="16" y1="20" x2="26" y2="15" stroke="#f59e0b" stroke-width="1.2"></line>
+              <line x1="16" y1="25" x2="26" y2="20" stroke="#f59e0b" stroke-width="1.2"></line>
+              <path d="M12 30h24l-4 6H16l-4-6z" fill="#00e5ff"></path>
+              <path d="M10 37c3-1 6 1 9 0s6-1 9 0 6 1 10 0" stroke="#38bdf8" stroke-width="1.2" stroke-linecap="round"></path>
+              <rect x="15" y="24" width="18" height="6.5" rx="2" fill="#d97706"></rect>
+              <text x="24" y="29" font-size="5" font-weight="900" fill="#ffffff" text-anchor="middle" font-family="'Inter', sans-serif" letter-spacing="0.5">CSL</text>
+            </svg>
+          </div>
+          <div class="front-csl-titles">
+            <h2 id="txtFrontOrgName">Cochin Shipyard Limited</h2>
+            <p id="txtFrontGovtUnder">A GOVERNMENT OF INDIA UNDERTAKING</p>
+          </div>
+        </div>
+
+        <!-- Location Accent Tag -->
+        <div class="front-location-tag">
+          <span class="front-orange-dash"></span>
+          <span class="front-location-txt" id="txtFrontLocation">COCHIN SHIPYARD · KOCHI, INDIA</span>
+        </div>
+
+        <!-- Welcome Typography -->
+        <h1 class="front-welcome-title" id="txtFrontWelcome">Welcome to your employee portal.</h1>
+        <p class="front-welcome-sub" id="txtFrontSub">Choose your employee category to continue.</p>
+
+        <!-- Nocturnal Shipyard Illustration Backdrop -->
+        <div class="front-shipyard-visual">
+          <svg width="100%" height="100%" viewBox="0 0 500 120" preserveAspectRatio="xMidYMid meet" fill="none">
+            <defs>
+              <linearGradient id="shipGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0e3a5f" />
+                <stop offset="100%" stop-color="#061c2e" />
+              </linearGradient>
+            </defs>
+            <path d="M380 90L410 15h40l20 75" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" stroke-dasharray="3 3"></path>
+            <line x1="410" y1="35" x2="450" y2="35" stroke="rgba(255,255,255,0.15)"></line>
+            <polygon points="410,15 360,110 470,110" fill="rgba(56, 189, 248, 0.04)"></polygon>
+            <circle cx="410" cy="15" r="3" fill="#f87171"></circle>
+            <path d="M120 100 L160 55 L350 55 L380 75 L370 100 Z" fill="url(#shipGrad)" stroke="#1e4d75" stroke-width="1.2"></path>
+            <rect x="230" y="25" width="80" height="30" rx="3" fill="#14446b" stroke="#38bdf8" stroke-width="0.8"></rect>
+            <rect x="240" y="30" width="8" height="6" rx="1" fill="#fef08a" opacity="0.9"></rect>
+            <rect x="252" y="30" width="8" height="6" rx="1" fill="#fef08a" opacity="0.9"></rect>
+            <rect x="264" y="30" width="8" height="6" rx="1" fill="#fef08a" opacity="0.9"></rect>
+            <rect x="276" y="30" width="8" height="6" rx="1" fill="#38bdf8" opacity="0.8"></rect>
+            <rect x="288" y="30" width="8" height="6" rx="1" fill="#38bdf8" opacity="0.8"></rect>
+            <line x1="270" y1="25" x2="270" y2="10" stroke="#94a3b8" stroke-width="1.5"></line>
+            <circle cx="270" cy="9" r="2.5" fill="#ef4444"></circle>
+            <circle cx="230" cy="40" r="2" fill="#10b981"></circle>
+            <text x="250" y="70" font-size="6.5" font-weight="700" fill="#94a3b8" letter-spacing="1">HARVEY INTERVENTION</text>
+            <text x="270" y="85" font-size="5.5" font-weight="700" fill="#38bdf8">ENVIRO+</text>
+            <line x1="50" y1="100" x2="450" y2="100" stroke="#00c6d7" stroke-width="1.5" opacity="0.6"></line>
+            <path d="M80 106c20-2 40 2 60 0s40-2 60 0 40 2 60 0 40-2 60 0" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1"></path>
+          </svg>
+        </div>
+
+        <!-- Front Category Selection Card Container (Matching Screenshot) -->
+        <div class="front-category-card">
+          <div class="front-cat-header-row">
+            <span class="front-cat-label" id="txtFrontCatLabel">SELECT YOUR CATEGORY</span>
+            <span class="front-cat-counter">01 — 01</span>
+          </div>
+
+          <h3 class="front-cat-question" id="txtFrontQuestion">How are you associated with CSL?</h3>
+
+          <!-- Option 1: Permanent Employee (Active/Selected) -->
+          <div class="front-option-card active" id="optPermanentEmp" onclick="selectEmployeeCategory('permanent')">
+            <div class="front-opt-left">
+              <div class="front-opt-icon-active" id="optIconPermanent">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <div class="front-opt-text">
+                <h4 id="txtOptPermanentTitle">Permanent Employee</h4>
+                <p id="txtOptPermanentSub">Signed in as Prathyush Mohan K</p>
+              </div>
+            </div>
+            <div class="front-opt-action-active" onclick="proceedToPortal(event)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#061523" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Option 2: Company on Contract Employee -->
+          <div class="front-option-card inactive" id="optContractEmp" onclick="selectEmployeeCategory('contract')">
+            <div class="front-opt-left">
+              <div class="front-opt-icon-inactive" id="optIconContract">
+                <span>02</span>
+              </div>
+              <div class="front-opt-text inactive">
+                <h4 id="txtOptContractTitle">Company on Contract Em...</h4>
+                <p id="txtOptContractSub">For employees of companies working on c...</p>
+              </div>
+            </div>
+            <div class="front-opt-action-inactive">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Expandable categories link -->
+          <button class="front-more-categories-btn" id="btnToggleMoreCategories" onclick="toggleMoreCategories()">
+            <span id="txtMoreCategories">More categories (Apprentice / Vendor) ∨</span>
+          </button>
+
+          <!-- Expandable categories tray -->
+          <div class="front-more-tray" id="moreCategoriesTray">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.04); cursor: pointer;" onclick="selectEmployeeCategory('apprentice')">
+                <strong style="color: #fff;">03 · CSL Apprentice / Graduate Trainee</strong>
+                <div style="font-size: 11.5px; color: #64748b;">For engineering &amp; trade apprentices</div>
+              </div>
+              <div style="padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.04); cursor: pointer;" onclick="selectEmployeeCategory('vendor')">
+                <strong style="color: #fff;">04 · Registered Vendor / Contractor</strong>
+                <div style="font-size: 11.5px; color: #64748b;">For shipyard equipment specialists</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status & Continue Bar (Matching Screenshot) -->
+          <div class="front-status-continue-row">
+            <div class="front-selected-status">
+              <span class="front-pulse-dot"></span>
+              <span id="txtSelectedStatus">Selected: Permanent Employee</span>
+            </div>
+            <button class="front-continue-btn" id="btnFrontContinue" onclick="proceedToPortal(event)">
+              <span id="txtContinueBtn">Continue</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Security & Eligibility Footer Note -->
+        <div class="front-trust-footer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <span id="txtTrustNote">For Cochin Shipyard employees and contract staff</span>
+        </div>
+
+        <!-- Decorative Bottom Waves & Sparkle Star Matching Screenshot -->
+        <div class="front-decor-bottom">
+          <svg width="220" height="40" viewBox="0 0 220 40" fill="none" style="position: absolute; right: 0; bottom: 0; opacity: 0.35;">
+            <path d="M0 35 C60 10, 140 38, 220 20" stroke="#00c6d7" stroke-width="1.2"></path>
+            <path d="M30 40 C90 18, 160 42, 220 28" stroke="#38bdf8" stroke-width="0.8"></path>
+          </svg>
+          <div class="front-sparkle-star" style="margin-right: 18px; margin-bottom: 6px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="moduleDashboard" class="portal-module" style="display:none;">
+      <!-- CSL Digital Employee Pass -->
+      <div class="csl-pass-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+          <div>
+            <div style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #d4a34b; font-weight: 700;">COCHIN SHIPYARD LIMITED</div>
+            <h2 style="font-size: 21px; font-weight: 800; margin-top: 2px;">CSL Digital Employee Pass</h2>
+          </div>
+          <span style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 4px;">ACTIVE DUTY</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px;">
+          <div>
+            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Employee Name</div>
+            <div style="font-size: 16px; font-weight: 700;">Prathyush Mohan K</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Designation</div>
+            <div style="font-size: 14px; font-weight: 600;">Senior Marine Structural Engineer</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Department</div>
+            <div style="font-size: 14px; font-weight: 600;">Hull &amp; Outfitting Design</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Code Number</div>
+            <div style="font-size: 16px; font-weight: 800; color: #d4a34b; font-family: monospace;">CSL/EMP/84920</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Duty Status Banner -->
+      <div class="duty-status-card">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981;"></div>
+          <div>
+            <div style="font-size: 14.5px; font-weight: 700; color: var(--text-dark);">
+              <span id="txtDutyStatus">Currently on Duty</span> · <span style="color: #0284c7;">General Shift (07:45 - 16:15)</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted);">Biometric Punch In at 07:42 AM · Sunday General Overtime</div>
+          </div>
+        </div>
+        <button class="btn-maroon" style="padding: 7px 14px; font-size: 12.5px;" onclick="switchPortalModule('attendance')">
+          Punch Details
+        </button>
+      </div>
+
+      <!-- Quick Action Tiles (Connecting to all shipyard services) -->
+      <div class="section-headline">
+        <span>Shipyard Services &amp; Applications</span>
+      </div>
+
+      <div class="grid-2col">
+        <!-- 1. SHIP THEORY DICTIONARY CARD -->
+        <div class="action-tile-btn" onclick="switchPortalModule('dictionary')">
+          <div class="action-tile-icon" style="background: #fdf2e9; color: #900c3f;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+          </div>
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h4 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Ship Theory Dictionary</h4>
+              <span class="drawer-badge-maroon">NEW</span>
+            </div>
+            <p style="font-size: 12.5px; color: var(--accent-maroon); font-family: 'Manjari', sans-serif; font-weight: 700; margin-top: 1px;">കപ്പൽ തിയറി ഡിക്ഷണറി</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">5 Categories, Master SVGs, English &amp; Malayalam</p>
+          </div>
+        </div>
+
+        <!-- 2. CSL WALL CALENDAR 2026 -->
+        <div class="action-tile-btn" onclick="switchPortalModule('calendar')">
+          <div class="action-tile-icon" style="background: #e0f2fe; color: #0284c7;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <div>
+            <h4 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">CSL Wall Calendar 2026</h4>
+            <p style="font-size: 12.5px; color: #0284c7; font-family: 'Manjari', sans-serif; font-weight: 700; margin-top: 1px;">CSL വാൾ കലണ്ടർ 2026</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">Holidays OT, Sunday General Shift &amp; Malayalam Era</p>
+          </div>
+        </div>
+
+        <!-- 3. CSL SALARY CALCULATOR -->
+        <div class="action-tile-btn" onclick="switchPortalModule('salary')">
+          <div class="action-tile-icon" style="background: #fef3c7; color: #d97706;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="6" y1="4" x2="18" y2="4"></line>
+              <line x1="6" y1="9" x2="18" y2="9"></line>
+              <path d="M6 14h6a4 4 0 0 0 0-8"></path>
+              <line x1="9" y1="14" x2="15" y2="21"></line>
+            </svg>
+          </div>
+          <div>
+            <h4 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">CSL Salary &amp; Payslip</h4>
+            <p style="font-size: 12.5px; color: #d97706; font-family: 'Manjari', sans-serif; font-weight: 700; margin-top: 1px;">ശമ്പള കാൽക്കുലേറ്റർ &amp; പേസ്ലിപ്പ്</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">Basic, IDA (48.4%), HRA, Yard Allowance &amp; OT</p>
+          </div>
+        </div>
+
+        <!-- 4. CSL INCOME TAX CALCULATOR -->
+        <div class="action-tile-btn" onclick="switchPortalModule('tax')">
+          <div class="action-tile-icon" style="background: #f0fdf4; color: #16a34a;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+              <line x1="8" y1="6" x2="16" y2="6"></line>
+              <line x1="16" y1="14" x2="16" y2="18"></line>
+            </svg>
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h4 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">CSL Income Tax Calculator</h4>
+              <span class="drawer-badge-cyan">FY 26-27</span>
+            </div>
+            <p style="font-size: 12.5px; color: #16a34a; font-family: 'Manjari', sans-serif; font-weight: 700; margin-top: 1px;">ഇൻകം ടാക്സ് കാൽക്കുലേറ്റർ</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">New vs Old Regime comparison with slabs</p>
+          </div>
+        </div>
+
+        <!-- 5. BIOMETRIC ATTENDANCE REGISTER -->
+        <div class="action-tile-btn" onclick="switchPortalModule('attendance')">
+          <div class="action-tile-icon" style="background: #ecfdf5; color: #059669;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4"></path>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+          </div>
+          <div>
+            <h4 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Biometric Attendance Logs</h4>
+            <p style="font-size: 12.5px; color: #059669; font-family: 'Manjari', sans-serif; font-weight: 700; margin-top: 1px;">ബയോമെട്രിക് ഹാജർ വിവരങ്ങൾ</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">Code Number CSL/EMP/84920 · Punch in/out records</p>
+          </div>
+        </div>
+
+        <!-- 6. AI DRAWING ANALYZER (GEMINI PRO) -->
+        <div class="action-tile-btn" onclick="openAnalyzerModalDirect()">
+          <div class="action-tile-icon" style="background: #f5f3ff; color: #7c3aed;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h4 style="font-size: 16px; font-weight: 800; color: var(--text-dark);">Gemini Pro Blueprint Analyzer</h4>
+              <span style="background: #7c3aed; color: #fff; font-size: 9.5px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">AI PRO</span>
+            </div>
+            <p style="font-size: 12.5px; color: #7c3aed; font-family: 'Manjari', sans-serif; font-weight: 700; margin-top: 1px;">സ്ട്രക്ചറൽ ബ്ലൂപ്രിന്റ് പരിശോധന</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">Upload structural drawings / PDF &amp; extract scantlings</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         MODULE 2: SHIP THEORY DICTIONARY
+         ========================================================= -->
+    <div id="moduleDictionary" class="portal-module" style="display:none;">
+      <!-- Dictionary Banner -->
+      <div class="dict-header-banner">
+        <div class="dict-title-group">
+          <p>COCHIN SHIPYARD LIMITED · NAVAL ARCHITECTURE MANUAL</p>
+          <h2>Ship Theory Dictionary</h2>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-maroon" onclick="switchPortalModule('dashboard')">
+            ← Dashboard
+          </button>
+          <button class="btn-cream-action" id="bannerAnalyzerBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+            </svg>
+            <span>AI Blueprint</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Breadcrumbs Navigation -->
+      <nav class="nav-breadcrumbs" id="breadcrumbsNav">
+        <span class="nav-breadcrumb-link" id="crumbHome">Ship Theory Folders</span>
+        <span class="nav-breadcrumb-separator" id="crumbSep1" style="display:none">/</span>
+        <span class="nav-breadcrumb-link" id="crumbFolder" style="display:none">Folder</span>
+        <span class="nav-breadcrumb-separator" id="crumbSep2" style="display:none">/</span>
+        <span class="nav-breadcrumb-current" id="crumbTerm" style="display:none">Term</span>
+      </nav>
+
+      <!-- Global Search & Quick Access Card -->
+      <div class="search-filter-card" id="searchContainer">
+        <div class="search-input-wrapper">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="termSearchInput" class="search-input" placeholder="Search ship theory terms in English or Malayalam (e.g., Keel, LOA, GM, ഫ്രെയിം, പ്ലാൻ)...">
+        </div>
+        <div class="search-results-list" id="searchResultsList"></div>
+      </div>
+
+      <!-- VIEW 1: FOLDER LIST -->
+      <section id="view1FolderList" class="view-container active">
+        <div class="section-headline">
+          <span>5 Core Marine Architecture Categories</span>
+          <span style="font-size: 13px; font-weight: normal; opacity: 0.85;">Total 35+ Naval Architecture Terms</span>
+        </div>
+        <div class="folders-grid" id="foldersGrid"></div>
+      </section>
+
+      <!-- VIEW 2: FOLDER CONTENT VIEW -->
+      <section id="view2FolderContent" class="view-container">
+        <div class="folder-view-header">
+          <button class="btn-maroon" id="btnBackToFolders">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>← Back to Folders</span>
+          </button>
+        </div>
+
+        <div class="folder-view-title-block">
+          <h2 class="folder-view-title" id="folderTitleEn">Folder Title</h2>
+          <div class="folder-view-title-ml" id="folderTitleMl">മലയാളം തലക്കെട്ട്</div>
+          <p class="folder-view-desc" id="folderDesc">Folder description</p>
+        </div>
+
+        <!-- Master Diagram Card -->
+        <div class="master-diagram-card">
+          <div class="master-diagram-header">
+            <div class="master-diagram-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+              </svg>
+              <span id="masterDiagramLabel">Master Category Architectural Diagram</span>
+            </div>
+            <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Interactive Vector Blueprint</span>
+          </div>
+          <div class="master-diagram-svg-container" id="masterDiagramContainer"></div>
+        </div>
+
+        <div class="terms-section-title">
+          <span>Terms in this category</span>
+          <span id="folderTermsCountBadge" style="font-size: 12px; opacity: 0.85;">7 Terms</span>
+        </div>
+        <div class="terms-list-container" id="termsListContainer"></div>
+      </section>
+
+      <!-- VIEW 3: SINGLE TERM DEDICATED CARD VIEW -->
+      <section id="view3TermCard" class="view-container">
+        <div class="single-term-view-wrapper">
+          <div class="term-view-top-nav">
+            <button class="btn-maroon" id="btnBackToFolderTermsTop">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>← Back</span>
+            </button>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-cream-action" id="btnPrevTerm">← Prev</button>
+              <button class="btn-cream-action" id="btnNextTerm">Next →</button>
+            </div>
+          </div>
+
+          <article class="term-card-container" id="singleTermCard">
+            <div class="term-header-strip">
+              <div class="term-category-tag" id="termParentCategory">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>CATEGORY 1 · SHIPBUILDING STAGES</span>
+              </div>
+              <span id="termNumberIndicator" style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Term #1 of 9</span>
+            </div>
+
+            <h2 class="term-card-title" id="termTitleEn">TERM TITLE</h2>
+            <div class="term-card-title-ml" id="termTitleMl">മലയാളം തലക്കെട്ട്</div>
+
+            <div class="term-diagram-box">
+              <div id="termSvgContainer"></div>
+              <div class="term-diagram-caption" id="termDiagramCaption">Technical Schematic · Cochin Shipyard Standards</div>
+            </div>
+
+            <div class="definition-section">
+              <div class="section-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>English Definition</span>
+              </div>
+              <p class="definition-text" id="termDefEn">English definition content goes here...</p>
+            </div>
+
+            <div class="malayalam-box">
+              <div class="section-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+                <span>മലയാളം വിശദീകരണം (Malayalam Explanation)</span>
+              </div>
+              <p class="malayalam-text" id="termDefMl">മലയാളം വിശദീകരണം ഇവിടെ...</p>
+            </div>
+
+            <div class="formula-box" id="termFormulaBox" style="display:none;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="9" x2="20" y2="9"></line>
+                <line x1="4" y1="15" x2="20" y2="15"></line>
+                <line x1="10" y1="3" x2="8" y2="21"></line>
+                <line x1="16" y1="3" x2="14" y2="21"></line>
+              </svg>
+              <span id="termFormulaText">GM = KM - KG</span>
+            </div>
+
+            <div class="card-bottom-actions">
+              <button class="btn-maroon" id="btnBackToFolderTermsBottom" style="min-width: 170px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="19" y1="12" x2="5" y2="12"></line>
+                  <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>← Back</span>
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <!-- =========================================================
+         MODULE 3: CSL WALL CALENDAR 2026
+         ========================================================= -->
+    <div id="moduleCalendar" class="portal-module" style="display:none;">
+      <div class="portal-section-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-dark);">CSL Wall Calendar 2026</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Cochin Shipyard Shift Schedule &amp; Overtime Rules</p>
+          </div>
+          <button class="btn-maroon" onclick="switchPortalModule('dashboard')">← Dashboard</button>
+        </div>
+
+        <div style="background: #fff8e1; border-left: 4px solid #f59e0b; padding: 12px 14px; border-radius: 6px; font-size: 13px; color: #78350f; margin-bottom: 18px;">
+          <strong>CSL Working &amp; Overtime Rules:</strong> National holidays are closed. On all other shipyard holidays, CSL works with Overtime (OT). Sunday duty is scheduled as General Shift (07:45 - 16:15).
+        </div>
+
+        <div style="background: #ffffff; border-radius: 8px; border: 1px solid var(--card-cream-border); padding: 16px;">
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 12px; text-align: center;">October 2026 · ഒക്ടോബർ 2026 (തുലാം 1202)</h3>
+          <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; font-size: 12px; font-weight: 700;">
+            <div style="color: #ef4444;">Sun (ഞായർ)</div>
+            <div>Mon (തിങ്കൾ)</div>
+            <div>Tue (ചൊവ്വ)</div>
+            <div>Wed (ബുധൻ)</div>
+            <div>Thu (വ്യാഴം)</div>
+            <div>Fri (വെള്ളി)</div>
+            <div style="color: #0284c7;">Sat (ശനി)</div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; font-size: 13px; margin-top: 10px;">
+            <div style="padding: 10px 4px; opacity: 0.3;">27</div>
+            <div style="padding: 10px 4px; opacity: 0.3;">28</div>
+            <div style="padding: 10px 4px; opacity: 0.3;">29</div>
+            <div style="padding: 10px 4px; opacity: 0.3;">30</div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">1</div>
+            <div style="padding: 10px 4px; background: #fee2e2; border: 1px solid #ef4444; border-radius: 6px; color: #991b1b; font-weight: 700;">2<br><span style="font-size: 9px;">Gandhi Jayanti</span></div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">3</div>
+            <div style="padding: 10px 4px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; font-weight: 700; color: #b45309;">4<br><span style="font-size: 9px;">General OT</span></div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">5</div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">6</div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">7</div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">8</div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">9</div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">10</div>
+            <div style="padding: 10px 4px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; font-weight: 700; color: #b45309;">11<br><span style="font-size: 9px;">General OT</span></div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">12</div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">13</div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">14</div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">15</div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">16</div>
+            <div style="padding: 10px 4px; background: #f8fafc; border-radius: 6px;">17</div>
+            <div style="padding: 10px 4px; background: #fef3c7; border: 2px solid #900c3f; border-radius: 6px; font-weight: 700; color: #b45309;">18<br><span style="font-size: 9px;">Today (Sun)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         MODULE 4: CSL INCOME TAX CALCULATOR
+         ========================================================= -->
+    <div id="moduleTax" class="portal-module" style="display:none;">
+      <div class="portal-section-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-dark);">CSL Income Tax Calculator</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Assessment Year 2027-28 (Financial Year 2026-27)</p>
+          </div>
+          <button class="btn-maroon" onclick="switchPortalModule('dashboard')">← Dashboard</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px;">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px;">Annual Gross Salary (₹)</label>
+            <input type="number" id="taxSalaryInput" value="1450000" class="search-input" style="padding: 10px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px;">Standard Deduction (₹)</label>
+            <input type="number" value="75000" readonly class="search-input" style="padding: 10px; background: #f1f5f9;">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 18px;">
+            <div style="font-size: 12px; font-weight: 700; color: #166534; text-transform: uppercase;">New Tax Regime (Default)</div>
+            <div style="font-size: 26px; font-weight: 800; color: #15803d; margin: 8px 0;" id="taxNewVal">₹ 1,02,400</div>
+            <div style="font-size: 12px; color: #166534;">Recommended · Nil tax up to ₹ 7.75 Lakhs</div>
+          </div>
+          <div style="background: #ffffff; border: 1px solid var(--card-cream-border); border-radius: 10px; padding: 18px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-dark); text-transform: uppercase;">Old Tax Regime</div>
+            <div style="font-size: 26px; font-weight: 800; color: var(--text-dark); margin: 8px 0;" id="taxOldVal">₹ 1,48,200</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Requires 80C, 80D, HRA declarations</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         MODULE 5: BIOMETRIC ATTENDANCE
+         ========================================================= -->
+    <div id="moduleAttendance" class="portal-module" style="display:none;">
+      <div class="portal-section-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-dark);">Biometric Attendance Logs</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Code Number: CSL/EMP/84920 · Punch &amp; Duty Register</p>
+          </div>
+          <button class="btn-maroon" onclick="switchPortalModule('dashboard')">← Dashboard</button>
+        </div>
+
+        <table class="extracted-items-table" style="background: #ffffff; border-radius: 8px; overflow: hidden;">
+          <thead>
+            <tr>
+              <th>Date &amp; Shift</th>
+              <th>Duty In</th>
+              <th>Duty Out</th>
+              <th>Total Hours</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>18-Oct-2026 (Sun)</strong><br><span style="font-size: 11px; color: #b45309;">Sunday General OT</span></td>
+              <td>07:42 AM</td>
+              <td>16:18 PM</td>
+              <td>8h 36m</td>
+              <td><span style="color: #15803d; font-weight: 700;">Approved OT</span></td>
+            </tr>
+            <tr>
+              <td><strong>17-Oct-2026 (Sat)</strong><br><span style="font-size: 11px; color: #64748b;">General Shift</span></td>
+              <td>07:40 AM</td>
+              <td>16:15 PM</td>
+              <td>8h 35m</td>
+              <td><span style="color: #15803d; font-weight: 700;">Present</span></td>
+            </tr>
+            <tr>
+              <td><strong>16-Oct-2026 (Fri)</strong><br><span style="font-size: 11px; color: #64748b;">General Shift + 2h OT</span></td>
+              <td>07:38 AM</td>
+              <td>18:20 PM</td>
+              <td>10h 42m</td>
+              <td><span style="color: #15803d; font-weight: 700;">Present + OT</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         MODULE 6: SALARY CALCULATOR
+         ========================================================= -->
+    <div id="moduleSalary" class="portal-module" style="display:none;">
+      <div class="portal-section-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-dark);">CSL Salary &amp; Payslip Generator</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Industrial Dearness Allowance (IDA) Pattern</p>
+          </div>
+          <button class="btn-maroon" onclick="switchPortalModule('dashboard')">← Dashboard</button>
+        </div>
+
+        <div style="background: #ffffff; border-radius: 8px; border: 1px solid var(--card-cream-border); padding: 18px;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 8px;">
+            <span>Basic Pay (Grade E-4)</span>
+            <strong>₹ 72,500</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 8px;">
+            <span>Industrial DA (48.4%)</span>
+            <strong>₹ 35,090</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 8px;">
+            <span>House Rent Allowance (HRA 18% Kochi)</span>
+            <strong>₹ 13,050</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 8px;">
+            <span>Special Yard Allowance &amp; Perks (35%)</span>
+            <strong>₹ 25,375</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 2px solid var(--accent-maroon); padding: 10px 0; font-size: 16px; font-weight: 800; color: var(--accent-maroon);">
+            <span>Gross Monthly Earnings</span>
+            <span>₹ 1,46,015</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </main>
+
+  <!-- =========================================================
+       GEMINI PRO DRAWING ANALYZER MODAL
+       ========================================================= -->
+  <div class="modal-overlay" id="analyzerModal">
+    <div class="analyzer-modal-card">
+      <div class="modal-header">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          Gemini Pro · Naval Architectural Drawing Analyzer
+        </h3>
+        <button class="modal-close-btn" id="closeAnalyzerBtn" title="Close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size: 13.5px; color: var(--text-dark); margin-bottom: 12px; line-height: 1.5;">
+          Upload a shipyard blueprint, structural cross-section, or framing PDF to extract structural members, scantlings, and welding details powered by <strong>Gemini Pro</strong>:
+        </p>
+
+        <div class="dropzone-box" id="drawingDropzone">
+          <input type="file" id="drawingFileInput" accept="image/*,application/pdf" style="display:none;">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#900c3f" stroke-width="1.8" style="margin-bottom: 8px;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <div style="font-weight: 700; color: var(--text-dark); font-size: 14px;">Click or drag & drop a Ship Structural Drawing</div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Supports PNG, JPG, WEBP, or scanned PDF blueprints</div>
+        </div>
+
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px;">
+          Or analyze sample CSL dockyard drawings:
+        </div>
+        <div class="sample-drawings-bar">
+          <button class="sample-pill-btn" data-sample="midship">Midship Framing Section (Fr. 75)</button>
+          <button class="sample-pill-btn" data-sample="double-bottom">Double Bottom &amp; Flat Plate Keel</button>
+          <button class="sample-pill-btn" data-sample="bulkhead">Watertight Corrugated Bulkhead</button>
+        </div>
+
+        <div id="analyzerLoading" style="display:none; text-align: center; padding: 24px;">
+          <div style="display: inline-block; width: 34px; height: 34px; border: 3px solid #ebd9ab; border-top-color: #900c3f; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+          <div style="margin-top: 10px; font-weight: 700; color: var(--text-dark); font-size: 14px;">Gemini Pro Analyzing Drawing Geometry &amp; Scantlings...</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Extracting structural components, weld symbols &amp; dictionary linkages</div>
+        </div>
+
+        <div class="analysis-preview-container" id="analysisOutputContainer">
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--card-cream-border); padding-bottom: 8px; margin-bottom: 12px;">
+            <div style="font-weight: 800; font-size: 15px; color: var(--text-dark);" id="outDrawingTitle">Drawing Title</div>
+            <span style="background: #e8f5e9; color: #2e7d32; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;" id="outModelBadge">Gemini Pro 2.5</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; font-size: 12.5px; margin-bottom: 14px;">
+            <div><strong>Vessel:</strong> <span id="outVesselType">-</span></div>
+            <div><strong>Section:</strong> <span id="outSectionType">-</span></div>
+            <div><strong>Frame Range:</strong> <span id="outFrameRange">-</span></div>
+            <div><strong>Steel Grade:</strong> <span id="outSteelGrade">-</span></div>
+          </div>
+
+          <div style="font-weight: 700; font-size: 13.5px; color: var(--accent-blue); margin-bottom: 6px;">
+            Extracted Structural Components (Linked to Ship Theory Dictionary):
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="extracted-items-table">
+              <thead>
+                <tr>
+                  <th>Structural Member</th>
+                  <th>Location</th>
+                  <th>Scantlings</th>
+                  <th>Function &amp; Dictionary Link</th>
+                </tr>
+              </thead>
+              <tbody id="extractedTableBody"></tbody>
+            </table>
+          </div>
+
+          <div style="margin-top: 14px; background: #fffde7; border-left: 3px solid #fbc02d; padding: 10px 12px; font-size: 12px; color: #5d4037;" id="outSummaryBox"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <p><strong>Cochin Shipyard Limited (CSL) · My CSL Employee Portal</strong></p>
+    <p>Ship Theory Dictionary, Naval Architecture Manual &amp; Engineering Tools</p>
+    <p style="font-size: 11px; opacity: 0.65; margin-top: 6px;">Deep Navy Blue &amp; Cream CSL Engineering UI · Mobile Hardware Back Button Support</p>
+  </footer>
+
+  <style>
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+
+  <script src="/js/dictionary-data.js"></script>
+  <script src="/js/app.js"></script>
+</body>
 </html>
-
