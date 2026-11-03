@@ -1,0 +1,6 @@
+{
+  "name": "My CSL - Cochin Shipyard Portal",
+  "description": "Cochin Shipyard Limited employee portal featuring structural drawing analysis and component extraction powered by Gemini Pro, employee pass, and dockyard engineering tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
